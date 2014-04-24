@@ -117,3 +117,107 @@ b ; => 4
 ...
 0
 
+
+;; # Exercise 1.6
+
+(defn abs [x]
+  (if (>= x 0)
+      x
+      (- x)))
+
+(defn average [x y]
+  (/ (+ x y) 2))
+
+(defn improve [guess x]
+  (average guess (/ x guess)))
+
+(defn good-enough? [guess x]
+  (< (abs (- (square guess) x)) 0.001))
+
+(defn new-if [pred then else]
+  (print pred "\n")
+  (cond pred then
+        :else else))
+
+(defn sqrt-iter [guess x ct]
+  (print ct "\n")
+  (if (good-enough? guess x)
+      guess
+      (sqrt-iter (improve guess x) x (inc ct))))
+
+(new-if (= 2 3) 0 5)
+
+(sqrt-iter 1.0 4 1)
+
+;; new-if evaluates (sqrt-iter ...) ahead of time -- leading to infinite recursion. like we
+;; saw in Exercise 1.5, applicative order evaluation leads to infinite recursion.
+
+;; if, on the other hand, has to use normal order evaluation -- it's a special form so it doesn't
+;; evaluate the recursive (sqrt-iter ...) calls until after it branches.
+
+
+;; # Exercise 1.7
+
+;; good-enough won't be very good for small numbers, for example....
+
+;; sqrt(0.0004) === 0.02
+
+(sqrt-iter 1.0 0.0004 1) ; => 0.6548...
+
+;; or for very large numbers, for example...
+
+;; sqrt(1E10) === 1E5
+
+;; goes through 22 iterations
+
+(sqrt-iter 1.0 (square 100000) 1)
+
+;; a better definition might be:
+
+(defn percent-diff [initial observed]
+  (if (= 0 initial)
+      1
+      (/ (- observed initial) initial)))
+
+(defn good-enough-improved? [guess last-guess x]
+  (< (abs (percent-diff last-guess guess)) 0.1))
+
+(defn sqrt-iter-improved [guess last-guess x ct]
+  (print ct ":" guess "\n")
+  (if (good-enough-improved? guess last-guess x)
+      guess
+      (sqrt-iter-improved (improve guess x) guess x (inc ct))))
+
+(sqrt-iter-improved 1.0 0 0.0004 1) ; => 0.2000... after 10 iterations
+
+(sqrt-iter-improved 1.0 0 (square 100000) 1) ; => 100005... after 20 iterations
+
+;; works better for small numbers, fewer iterations for large ones
+
+;; from http://community.schemewiki.org/?sicp-ex-1.7:
+;; there is a similar, but slightly more clever way to get the same effect without the coupling.
+
+(defn good-enough-best? [guess x]
+  (< (abs (percent-diff guess (improve guess x))) 0.1))
+
+;; this checks that the percent difference is < 10% (tunable) but doesn't require the
+;; extra last-guess argument.
+
+
+;; # Exercise 1.8
+
+(defn cube [x]
+  (* x x x))
+
+(defn improve-cube [guess x]
+  (/ (+ (* 2 guess) (/ x (square guess))) 3))
+
+(defn good-enough-cube? [guess x]
+  (< (abs (percent-diff guess (improve-cube guess x))) 0.01))
+
+(defn cbrt-iter [guess x]
+  (if (good-enough-cube? guess x)
+      guess
+      (cbrt-iter (improve-cube guess x) x)))
+
+(cbrt-iter 1.0 27) ;; => 3.00...
