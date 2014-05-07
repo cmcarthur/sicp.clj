@@ -102,3 +102,42 @@
 ;; for y=1 => 2
 ;; for y=2 => 4
 ;; for y>2 => 2^(powers of two equal to the value of y^n)
+
+
+;; # Exercise 1.11
+
+(defn f [n]
+  (if (< n 3)
+      n
+      (+ (f (- n 1))
+         (* 2 (f (- n 2)))
+         (* 3 (f (- n 3))))))
+
+;; f-iter taken from http://www.billthelizard.com/2009/11/sicp-exercise-111.html
+
+(defn f-iter [a b c n]
+  (if (< n 3)
+      a
+      (f-iter (+ a (* 2 b) (* 3 c))
+              a
+              b
+              (- n 1))))
+
+
+;; Exercise 1.12
+
+;;    1
+;;   1 1
+;;  1 2 1
+;; 1 3 3 1
+;;   ...
+
+(defn pascal [row col]
+  (if (or (= row col) (= col 0))
+      1
+      (+ (pascal (dec row) col)
+         (pascal (dec row) (dec col)))))
+
+(pascal 4 2) ;=> 6
+
+;; Skipping 1.13
